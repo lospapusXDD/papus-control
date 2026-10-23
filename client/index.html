@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#070a12">
+  <title>PapusControl • Centro de Mando Total</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo"><i class="fa-solid fa-gamepad"></i></div>
+        <div class="brand-titles">
+          <h1>PAPUS<span class="neon-text">CONTROL</span></h1>
+          <div class="connection-status">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">PapusBank API</span>
+            <span class="pill-badge" id="gpuBadge"><i class="fa-solid fa-bolt"></i> GTX 1050 Ti</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-btns">
+        <button class="btn-icon" id="btnOpenAuth" title="Configurar Servidor y JWT">
+          <i class="fa-solid fa-key"></i>
+        </button>
+        <button class="btn-icon" id="btnFullscreen" title="Pantalla Completa">
+          <i class="fa-solid fa-expand"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+      <button class="nav-tab active" data-tab="tabMediaCam">
+        <i class="fa-solid fa-desktop"></i>
+        <span>Pantalla & Control</span>
+      </button>
+      <button class="nav-tab" data-tab="tabMouse">
+        <i class="fa-solid fa-arrow-pointer"></i>
+        <span>Touchpad</span>
+      </button>
+      <button class="nav-tab" data-tab="tabApps">
+        <i class="fa-solid fa-shapes"></i>
+        <span>Apps</span>
+      </button>
+      <button class="nav-tab" data-tab="tabShell">
+        <i class="fa-solid fa-terminal"></i>
+        <span>Shell/SQL</span>
+      </button>
+      <button class="nav-tab" data-tab="tabMonitor">
+        <i class="fa-solid fa-microchip"></i>
+        <span>Todos los Procesos</span>
+      </button>
+      <button class="nav-tab" data-tab="tabPower">
+        <i class="fa-solid fa-power-off"></i>
+        <span>Energía</span>
+      </button>
+    </nav>
+
+    <!-- Main View Panels -->
+    <main class="views-wrapper">
+
+      <!-- 1. PANTALLA EN VIVO + MOUSE Y TECLADO INTEGRADO EN LA MISMA VISTA -->
+      <section class="view-panel active" id="tabMediaCam">
+        <div class="card-glass screen-main-card">
+          <div class="card-head">
+            <div class="fps-selector-group">
+              <span class="fps-label"><i class="fa-solid fa-gauge-high"></i> NVENC:</span>
+              <button class="fps-chip" data-fps="30">30 FPS</button>
+              <button class="fps-chip active" data-fps="60">60 FPS</button>
+              <button class="fps-chip ultra" data-fps="120">120 FPS</button>
+            </div>
+            <div class="screen-view-tools">
+              <button class="tool-chip" id="btnToggleCamMode"><i class="fa-solid fa-camera"></i> Webcam</button>
+              <button class="tool-chip icon" id="btnRefreshVisual"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Video Viewport with direct touch click -->
+          <div class="visual-viewport" id="visualViewport">
+            <video id="liveGpuVideo" autoplay muted playsinline style="display:none;"></video>
+            <img id="visualFeedImg" alt="Captura de pantalla">
+            <div class="visual-empty" id="visualEmpty">
+              <i class="fa-solid fa-tv"></i>
+              <p>Iniciando stream por GPU (GTX 1050 Ti)...</p>
+            </div>
+            <!-- Ripple click indicator -->
+            <div class="click-ripple" id="clickRipple"></div>
+          </div>
+
+          <!-- DIRECT MOUSE & KEYBOARD DOCK (Debajo de la pantalla) -->
+          <div class="integrated-controls-dock">
+            <!-- Text bar to type directly into active Windows window -->
+            <div class="dock-type-bar">
+              <i class="fa-regular fa-keyboard"></i>
+              <input type="text" id="screenTextInput" placeholder="Tipear en la PC..." autocomplete="off">
+              <button class="btn-dock-send" id="btnScreenSendText">Enviar</button>
+              <button class="btn-dock-send enter" id="btnScreenSendEnter">↵</button>
+              <button class="btn-dock-mic" id="btnScreenMic" title="Dictar por voz"><i class="fa-solid fa-microphone"></i></button>
+            </div>
+
+            <!-- Essential Quick Keys & Mouse buttons in Screen view -->
+            <div class="dock-buttons-strip">
+              <button class="dock-btn mouse-left" id="btnScreenMouseLeft"><i class="fa-solid fa-computer-mouse"></i> Clic Izq</button>
+              <button class="dock-btn mouse-right" id="btnScreenMouseRight">Clic Der</button>
+              <button class="dock-btn" data-sendkey="esc">Esc</button>
+              <button class="dock-btn" data-sendkey="tab">Tab</button>
+              <button class="dock-btn" data-sendkey="enter">Enter</button>
+              <button class="dock-btn" data-sendkey="backspace">Borrar</button>
+              <button class="dock-btn" data-sendkey="desktop"><i class="fa-brands fa-windows"></i>+D</button>
+              <button class="dock-btn scroll" id="btnScreenScrollUp"><i class="fa-solid fa-arrow-up"></i></button>
+              <button class="dock-btn scroll" id="btnScreenScrollDown"><i class="fa-solid fa-arrow-down"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Voice & TTS card -->
+        <div class="card-glass">
+          <div class="card-head">
+            <h3><i class="fa-solid fa-volume-high"></i> Texto a Voz (TTS) & Comandos</h3>
+          </div>
+          <div class="tts-input-row">
+            <input type="text" id="ttsInput" placeholder="Escribe para que tu PC lo diga en voz alta...">
+            <button class="btn-primary" id="btnSendTTS"><i class="fa-solid fa-bullhorn"></i> Hablar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. TOUCHPAD DEDICADO -->
+      <section class="view-panel" id="tabMouse">
+        <div class="type-deck">
+          <div class="type-input-box">
+            <i class="fa-regular fa-keyboard"></i>
+            <input type="text" id="phoneTextInput" placeholder="Escribe aquí para tipear en la PC..." autocomplete="off">
+            <button class="voice-btn" id="btnVoiceMic" title="Hablar por micrófono"><i class="fa-solid fa-microphone"></i></button>
+            <button class="send-btn" id="btnSendTextPhone"><i class="fa-solid fa-paper-plane"></i></button>
+            <button class="enter-btn" id="btnSendEnterPhone">↵</button>
+          </div>
+        </div>
+
+        <div class="keys-strip">
+          <button class="key-chip" data-sendkey="esc">Esc</button>
+          <button class="key-chip" data-sendkey="tab">Tab</button>
+          <button class="key-chip" data-sendkey="backspace">Borrar</button>
+          <button class="key-chip" data-sendkey="enter">Enter</button>
+          <button class="key-chip" data-sendkey="space">Espacio</button>
+          <button class="key-chip" id="btnClipboardRead"><i class="fa-regular fa-clipboard"></i> Leer Clip</button>
+        </div>
+
+        <div class="touch-container">
+          <div class="touch-pad" id="touchPad">
+            <div class="pad-grid"></div>
+            <div class="pad-msg">
+              <i class="fa-solid fa-fingerprint"></i>
+              <span>Touchpad Remoto</span>
+            </div>
+            <div class="cursor-blob" id="cursorBlob"></div>
+          </div>
+          <div class="scroll-slider" id="scrollBar">
+            <i class="fa-solid fa-chevron-up"></i>
+            <span>SCROLL</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+
+        <div class="mouse-btns-row">
+          <button class="m-btn left" id="btnClickLeft"><i class="fa-solid fa-computer-mouse"></i> CLIC IZQ</button>
+          <button class="m-btn drag" id="btnToggleDrag"><i class="fa-solid fa-hand-back-fist"></i> <span id="dragLabel">ARRASTRE</span></button>
+          <button class="m-btn right" id="btnClickRight"><i class="fa-regular fa-hand-pointer"></i> CLIC DER</button>
+        </div>
+      </section>
+
+      <!-- 3. APPS DISPONIBLES -->
+      <section class="view-panel" id="tabApps">
+        <div class="card-glass">
+          <div class="card-head">
+            <h3><i class="fa-solid fa-layer-group"></i> Aplicaciones Disponibles</h3>
+            <button class="tool-chip" id="btnFetchApps"><i class="fa-solid fa-arrows-rotate"></i> Recargar</button>
+          </div>
+
+          <div class="apps-grid-container" id="appsGrid">
+            <div class="loading-apps">Cargando aplicaciones...</div>
+          </div>
+
+          <div class="custom-launch-area">
+            <h4>Ejecutar programa o URL libre:</h4>
+            <div class="custom-input-group">
+              <input type="text" id="customAppExec" placeholder="Ej: vlc, code, winword, o https://youtube.com">
+              <button class="btn-primary" id="btnLaunchCustom">Lanzar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. SHELL & SQL -->
+      <section class="view-panel" id="tabShell">
+        <div class="card-glass shell-card">
+          <div class="card-head">
+            <div class="term-tags">
+              <button class="shell-tab active" id="tabShellMode">PowerShell</button>
+              <button class="shell-tab" id="tabSqlMode">SQL Query</button>
+            </div>
+            <div class="term-tools">
+              <button class="btn-icon-sm" id="btnClearTerminal"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+
+          <div class="terminal-screen" id="terminalScreen">
+            <div class="term-row system">[PapusControl Shell listo. Escribe cualquier comando.]</div>
+          </div>
+
+          <div class="quick-commands-bar">
+            <button class="q-cmd" data-cmd="ipconfig">ipconfig</button>
+            <button class="q-cmd" data-cmd="nvidia-smi">nvidia-smi</button>
+            <button class="q-cmd" data-cmd="whoami">whoami</button>
+            <button class="q-cmd" data-cmd="dir">dir</button>
+            <button class="q-cmd" data-cmd="netstat -ano | Select -First 10">netstat</button>
+          </div>
+
+          <form class="shell-input-form" id="shellForm">
+            <span class="shell-prompt" id="shellPrompt">PS &gt;</span>
+            <input type="text" id="shellInput" placeholder="Ejecutar en Windows..." autocomplete="off">
+            <button type="submit" class="shell-send-btn"><i class="fa-solid fa-play"></i></button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 5. TODOS LOS PROCESOS (SIN LÍMITE) -->
+      <section class="view-panel" id="tabMonitor">
+        <div class="card-glass">
+          <div class="card-head processes-head">
+            <div class="head-left">
+              <h3><i class="fa-solid fa-list-check"></i> Todos los Procesos Activos</h3>
+              <span class="badge-total" id="badgeTotalProcs">0 procesos</span>
+            </div>
+            <button class="tool-chip" id="btnRefreshProcesses"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+          </div>
+
+          <!-- Process Filter Bar -->
+          <div class="proc-filter-bar">
+            <div class="search-input-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="procSearchInput" placeholder="Filtrar por nombre o PID en tiempo real...">
+            </div>
+            <div class="sort-selector">
+              <button class="sort-chip active" id="btnSortCpu">Ordenar: CPU</button>
+              <button class="sort-chip" id="btnSortMem">Ordenar: RAM</button>
+            </div>
+          </div>
+
+          <!-- Full Table -->
+          <div class="table-container full-height">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>PID</th>
+                  <th>Nombre del Proceso</th>
+                  <th>CPU %</th>
+                  <th>Memoria RAM</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="processesTableBody">
+                <tr><td colspan="5" class="empty-table">Obteniendo todos los procesos de Windows...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. ENERGÍA -->
+      <section class="view-panel" id="tabPower">
+        <div class="card-glass">
+          <div class="card-head">
+            <h3><i class="fa-solid fa-power-off"></i> Control de Energía</h3>
+          </div>
+
+          <div class="power-cards-grid">
+            <button class="p-card" data-poweraction="screen_off">
+              <i class="fa-solid fa-tv"></i>
+              <div class="p-info">
+                <h4>Apagar Pantalla</h4>
+                <p>Pone los monitores en reposo</p>
+              </div>
+            </button>
+
+            <button class="p-card" data-poweraction="suspend">
+              <i class="fa-solid fa-moon"></i>
+              <div class="p-info">
+                <h4>Suspender PC</h4>
+                <p>Modo bajo consumo</p>
+              </div>
+            </button>
+
+            <button class="p-card danger" data-poweraction="shutdown">
+              <i class="fa-solid fa-power-off"></i>
+              <div class="p-info">
+                <h4>Apagar PC</h4>
+                <p>Apagado programado en 15s</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-glass">
+          <div class="card-head">
+            <h3><i class="fa-solid fa-volume-high"></i> Volumen del Sistema</h3>
+          </div>
+          <div class="vol-control-row">
+            <button class="btn-sm" id="btnVolMute"><i class="fa-solid fa-volume-xmark"></i> Mute</button>
+            <button class="btn-sm" id="btnVolDown"><i class="fa-solid fa-volume-low"></i> Bajar</button>
+            <button class="btn-sm" id="btnVolUp"><i class="fa-solid fa-volume-high"></i> Subir</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Auth / Config Modal -->
+    <div class="modal-overlay" id="authModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-shield-halved"></i> Conexión PapusBank API</h3>
+          <button class="btn-close" id="btnCloseAuth">&times;</button>
+        </div>
+        <div class="modal-content">
+          <label>URL del Servidor PapusBank:</label>
+          <input type="text" id="cfgServerUrl" placeholder="http://192.168.0.20:3000 o https://tudominio.com">
+
+          <label>Usuario / Nick de Administrador:</label>
+          <input type="text" id="cfgNick" placeholder="Tu nick">
+
+          <label>Contraseña:</label>
+          <input type="password" id="cfgPassword" placeholder="Tu contraseña">
+
+          <label>Token JWT:</label>
+          <input type="text" id="cfgJwt" placeholder="Bearer eyJhbGciOi...">
+
+          <div class="modal-actions-btns">
+            <button class="btn-secondary" id="btnLoginApi"><i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</button>
+            <button class="btn-primary" id="btnSaveConfig"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-popup" id="toastBox">
+      <span id="toastMessage">Operación realizada</span>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
